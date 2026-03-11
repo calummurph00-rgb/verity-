@@ -1,0 +1,2096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERITY — News Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0a0a0f;
+    --paper: #f5f0e8;
+    --paper-dark: #ede8dc;
+    --accent-red: #c0392b;
+    --accent-blue: #1a3a6b;
+    --accent-gold: #b8860b;
+    --left: #1a3a6b;
+    --right: #8b1a1a;
+    --center: #2d5a27;
+    --rule: rgba(10,10,15,0.15);
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+    --serif: 'Playfair Display', serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.6;
+  }
+
+  /* MASTHEAD */
+  .masthead {
+    border-bottom: 3px double var(--ink);
+    padding: 24px 48px 20px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: end;
+    gap: 16px;
+  }
+
+  .masthead-tagline {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(10,10,15,0.5);
+    line-height: 1.6;
+  }
+
+  .masthead-title {
+    font-family: var(--serif);
+    font-size: clamp(48px, 8vw, 96px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    text-align: center;
+    line-height: 0.9;
+    color: var(--ink);
+  }
+
+  .masthead-title span {
+    display: block;
+    font-size: 11px;
+    font-family: var(--mono);
+    font-weight: 400;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(10,10,15,0.4);
+    margin-top: 6px;
+  }
+
+  .masthead-meta {
+    text-align: right;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: rgba(10,10,15,0.5);
+    line-height: 1.8;
+  }
+
+  .divider-rule {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 48px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .divider-rule span {
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(10,10,15,0.35);
+    white-space: nowrap;
+  }
+  .divider-rule::before, .divider-rule::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+
+  /* MAIN LAYOUT */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 2px 1.4fr;
+    min-height: calc(100vh - 120px);
+  }
+
+  .col-divider {
+    background: var(--rule);
+    margin: 24px 0;
+  }
+
+  /* INPUT COLUMN */
+  .input-col {
+    padding: 36px 40px 36px 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: rgba(10,10,15,0.4);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+
+  .input-col h2 {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+    font-style: italic;
+  }
+
+  .input-col p {
+    font-size: 13px;
+    line-height: 1.7;
+    color: rgba(10,10,15,0.6);
+    font-weight: 300;
+  }
+
+  .source-type-row {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--ink);
+  }
+
+  .source-btn {
+    flex: 1;
+    padding: 8px 4px;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    background: transparent;
+    border: none;
+    border-right: 1px solid var(--ink);
+    cursor: pointer;
+    transition: all 0.15s;
+    color: rgba(10,10,15,0.5);
+  }
+  .source-btn:last-child { border-right: none; }
+  .source-btn.active {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .source-btn:hover:not(.active) {
+    background: var(--paper-dark);
+    color: var(--ink);
+  }
+
+  .textarea-wrap {
+    position: relative;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 220px;
+    padding: 16px;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.7;
+    background: white;
+    border: 1px solid rgba(10,10,15,0.2);
+    border-top: 3px solid var(--ink);
+    resize: vertical;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s;
+    letter-spacing: 0.01em;
+  }
+
+  textarea:focus {
+    border-color: var(--ink);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+
+  textarea::placeholder {
+    color: rgba(10,10,15,0.25);
+    font-style: italic;
+  }
+
+  .char-count {
+    position: absolute;
+    bottom: 8px;
+    right: 10px;
+    font-family: var(--mono);
+    font-size: 9px;
+    color: rgba(10,10,15,0.3);
+  }
+
+  .pub-input {
+    width: 100%;
+    padding: 10px 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+    background: white;
+    border: 1px solid rgba(10,10,15,0.2);
+    border-left: 3px solid var(--ink);
+    color: var(--ink);
+    outline: none;
+    transition: all 0.2s;
+  }
+  .pub-input:focus {
+    border-left-color: var(--accent-gold);
+    box-shadow: 3px 0 0 var(--accent-gold);
+  }
+  .pub-input::placeholder { color: rgba(10,10,15,0.25); }
+
+  .analyze-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    font-family: var(--serif);
+    font-size: 16px;
+    font-weight: 700;
+    font-style: italic;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s;
+  }
+
+  .analyze-btn::before {
+    content: '';
+    position: absolute;
+    left: -100%;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(245,240,232,0.1), transparent);
+    transition: left 0.4s;
+  }
+
+  .analyze-btn:hover::before { left: 100%; }
+  .analyze-btn:hover { background: #1a1a2e; }
+  .analyze-btn:active { transform: translateY(1px); }
+
+  .analyze-btn.loading {
+    pointer-events: none;
+    opacity: 0.7;
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(245,240,232,0.3);
+    border-top-color: var(--paper);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .disclaimer {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: rgba(10,10,15,0.35);
+    line-height: 1.6;
+    border-top: 1px solid var(--rule);
+    padding-top: 12px;
+  }
+
+  /* RESULTS COLUMN */
+  .results-col {
+    padding: 36px 48px 36px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    opacity: 0.4;
+    text-align: center;
+  }
+
+  .empty-state .big-eye {
+    font-size: 64px;
+    line-height: 1;
+    filter: grayscale(1);
+  }
+
+  .empty-state h3 {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  .empty-state p {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    max-width: 280px;
+    line-height: 1.8;
+  }
+
+  /* RESULTS DISPLAY */
+  .results-display {
+    display: none;
+    flex-direction: column;
+    gap: 28px;
+    animation: fadeUp 0.4s ease;
+  }
+
+  .results-display.visible {
+    display: flex;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Claim headline */
+  .claim-header {
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 16px;
+  }
+
+  .claim-header .kicker {
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent-red);
+    margin-bottom: 8px;
+  }
+
+  .claim-header h3 {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .claim-header .pub-tag {
+    margin-top: 8px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: rgba(10,10,15,0.45);
+    letter-spacing: 0.05em;
+  }
+
+  /* VERDICT BANNER */
+  .verdict-banner {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    border: 2px solid var(--ink);
+  }
+
+  .verdict-label-col {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 16px 14px;
+    display: flex;
+    align-items: center;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .verdict-content {
+    flex: 1;
+    padding: 16px 20px;
+  }
+
+  .verdict-score-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .verdict-score {
+    font-family: var(--serif);
+    font-size: 48px;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .verdict-score.high { color: #2d7a2d; }
+  .verdict-score.medium { color: var(--accent-gold); }
+  .verdict-score.low { color: var(--accent-red); }
+
+  .verdict-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .verdict-label.high { color: #2d7a2d; }
+  .verdict-label.medium { color: var(--accent-gold); }
+  .verdict-label.low { color: var(--accent-red); }
+
+  .verdict-desc {
+    font-size: 12px;
+    line-height: 1.6;
+    color: rgba(10,10,15,0.65);
+  }
+
+  /* POLITICAL ALIGNMENT */
+  .alignment-card {
+    border: 1px solid var(--rule);
+    background: white;
+  }
+
+  .card-header {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--paper-dark);
+  }
+
+  .card-header h4 {
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(10,10,15,0.55);
+  }
+
+  .card-body {
+    padding: 16px;
+  }
+
+  .spectrum-bar {
+    position: relative;
+    height: 28px;
+    background: linear-gradient(to right, #1a3a6b, #7a4fff, #e0e0e0, #ff7777, #8b1a1a);
+    border-radius: 2px;
+    margin: 10px 0 6px;
+    overflow: visible;
+  }
+
+  .spectrum-labels {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(10,10,15,0.45);
+    margin-bottom: 10px;
+  }
+
+  .spectrum-needle {
+    position: absolute;
+    top: -6px;
+    width: 3px;
+    height: 40px;
+    background: var(--ink);
+    transform: translateX(-50%);
+    border-radius: 1px;
+    transition: left 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .spectrum-needle::after {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 10px;
+    height: 10px;
+    background: var(--ink);
+    border-radius: 50%;
+  }
+
+  .alignment-detail {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .align-stat {
+    padding: 10px;
+    background: var(--paper-dark);
+    border-left: 3px solid var(--rule);
+  }
+
+  .align-stat.left-leaning { border-left-color: var(--left); }
+  .align-stat.right-leaning { border-left-color: var(--right); }
+  .align-stat.neutral { border-left-color: var(--center); }
+
+  .align-stat-label {
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(10,10,15,0.45);
+    margin-bottom: 4px;
+  }
+
+  .align-stat-value {
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  /* FUNDING CARD */
+  .funding-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .funding-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .funding-item-label {
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(10,10,15,0.4);
+  }
+
+  .funding-item-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+
+  .funding-bar-wrap {
+    margin-top: 4px;
+  }
+
+  .funding-bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    color: rgba(10,10,15,0.45);
+    margin-bottom: 4px;
+  }
+
+  .funding-bar {
+    height: 6px;
+    background: var(--paper-dark);
+    border-radius: 1px;
+    overflow: hidden;
+  }
+
+  .funding-bar-fill {
+    height: 100%;
+    background: var(--ink);
+    border-radius: 1px;
+    transition: width 1s ease;
+    width: 0;
+  }
+
+  /* CLAIMS TABLE */
+  .claims-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .claim-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--rule);
+    align-items: start;
+  }
+  .claim-row:last-child { border-bottom: none; }
+
+  .claim-num {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: rgba(10,10,15,0.3);
+    padding-top: 2px;
+  }
+
+  .claim-text {
+    font-size: 12px;
+    line-height: 1.5;
+    color: rgba(10,10,15,0.75);
+  }
+
+  .claim-badge {
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 7px;
+    border: 1px solid;
+    white-space: nowrap;
+    margin-top: 1px;
+  }
+
+  .claim-badge.verified { color: #2d7a2d; border-color: #2d7a2d; background: rgba(45,122,45,0.05); }
+  .claim-badge.disputed { color: var(--accent-red); border-color: var(--accent-red); background: rgba(192,57,43,0.05); }
+  .claim-badge.unverified { color: var(--accent-gold); border-color: var(--accent-gold); background: rgba(184,134,11,0.05); }
+  .claim-badge.misleading { color: #8b3a1a; border-color: #8b3a1a; background: rgba(139,58,26,0.07); }
+
+  /* FOOTNOTES */
+  .footnotes {
+    border-top: 2px double var(--rule);
+    padding-top: 14px;
+    margin-top: 4px;
+  }
+
+  .footnotes h5 {
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(10,10,15,0.35);
+    margin-bottom: 10px;
+  }
+
+  .footnote-item {
+    font-size: 11px;
+    color: rgba(10,10,15,0.55);
+    line-height: 1.6;
+    padding-left: 16px;
+    position: relative;
+    margin-bottom: 6px;
+  }
+
+  .footnote-item::before {
+    content: '†';
+    position: absolute;
+    left: 0;
+    font-family: var(--serif);
+    font-size: 13px;
+    color: rgba(10,10,15,0.3);
+  }
+
+  /* Error state */
+  .error-msg {
+    padding: 16px;
+    background: rgba(192,57,43,0.05);
+    border: 1px solid rgba(192,57,43,0.3);
+    border-left: 3px solid var(--accent-red);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent-red);
+    line-height: 1.6;
+    display: none;
+  }
+  .error-msg.visible { display: block; }
+
+  /* Loading overlay */
+  .loading-overlay {
+    display: none;
+    flex-direction: column;
+    gap: 24px;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    padding: 40px;
+    text-align: center;
+  }
+  .loading-overlay.visible { display: flex; }
+
+  .loading-text {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-style: italic;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
+
+  .loading-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .loading-step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(10,10,15,0.4);
+    padding: 8px 12px;
+    border: 1px solid var(--rule);
+    transition: all 0.3s;
+  }
+
+  .loading-step.active {
+    color: var(--ink);
+    border-color: var(--ink);
+    background: var(--paper-dark);
+  }
+
+  .loading-step.done {
+    color: #2d7a2d;
+    border-color: rgba(45,122,45,0.3);
+  }
+
+  .step-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+
+  /* HERO SECTION */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 0 10vw;
+    position: relative;
+    overflow: hidden;
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E");
+    pointer-events: none;
+    opacity: 1;
+  }
+
+  /* Faint diagonal lines texture */
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 60px,
+      rgba(245,240,232,0.015) 60px,
+      rgba(245,240,232,0.015) 61px
+    );
+    pointer-events: none;
+  }
+
+  .hero-inner {
+    position: relative;
+    z-index: 2;
+    max-width: 900px;
+  }
+
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,0.4);
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: heroFadeUp 0.8s ease 0.1s forwards;
+  }
+
+  .hero-eyebrow::before {
+    content: '';
+    width: 32px;
+    height: 1px;
+    background: rgba(245,240,232,0.3);
+  }
+
+  .hero-body-text {
+    font-family: var(--sans);
+    font-size: clamp(14px, 1.5vw, 17px);
+    font-weight: 300;
+    line-height: 1.8;
+    color: rgba(245,240,232,0.55);
+    max-width: 460px;
+    margin-bottom: 40px;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: heroFadeUp 0.8s ease 0.3s forwards;
+  }
+
+  .hero-body-text strong {
+    color: rgba(245,240,232,0.85);
+    font-weight: 500;
+  }
+
+  .hero-tagline {
+    font-family: var(--serif);
+    font-size: clamp(44px, 7vw, 88px);
+    font-weight: 900;
+    line-height: 1.0;
+    letter-spacing: -0.025em;
+    color: var(--paper);
+    margin-bottom: 48px;
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+    animation: heroFadeUp 0.9s cubic-bezier(0.16,1,0.3,1) 0.2s forwards;
+    /* This is also controlled by scroll */
+    transform-origin: left center;
+    will-change: transform, opacity;
+  }
+
+  .hero-tagline em {
+    font-style: italic;
+    color: rgba(245,240,232,0.45);
+  }
+
+  .hero-tagline .highlight {
+    position: relative;
+    display: inline-block;
+  }
+
+  .hero-tagline .highlight::after {
+    content: '';
+    position: absolute;
+    bottom: 6px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--accent-red);
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: underlineIn 0.6s ease 1.1s forwards;
+  }
+
+  @keyframes underlineIn { to { transform: scaleX(1); } }
+
+  .hero-scroll-cta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,0.4);
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    padding: 0;
+    transition: color 0.2s;
+    opacity: 0;
+    animation: heroFadeUp 0.8s ease 1.0s forwards;
+  }
+
+  .hero-scroll-cta:hover { color: rgba(245,240,232,0.8); }
+
+  .scroll-arrow {
+    width: 36px;
+    height: 36px;
+    border: 1px solid rgba(245,240,232,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    animation: arrowBounce 2s ease-in-out 1.5s infinite;
+    transition: border-color 0.2s;
+  }
+
+  .hero-scroll-cta:hover .scroll-arrow {
+    border-color: rgba(245,240,232,0.6);
+  }
+
+  @keyframes arrowBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(4px); }
+  }
+
+  @keyframes heroFadeUp {
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* The big VERITY wordmark in hero background */
+  .hero-bg-word {
+    position: absolute;
+    right: -2vw;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: var(--serif);
+    font-size: clamp(180px, 22vw, 340px);
+    font-weight: 900;
+    color: rgba(245,240,232,0.03);
+    letter-spacing: -0.04em;
+    user-select: none;
+    pointer-events: none;
+    z-index: 1;
+    line-height: 1;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .masthead { padding: 16px 20px 14px; }
+    .main-grid { grid-template-columns: 1fr; }
+    .col-divider { display: none; }
+    .input-col, .results-col { padding: 24px 20px; }
+    .divider-rule { padding: 8px 20px; }
+    .hero { padding: 0 6vw; min-height: 100svh; }
+    .hero-tagline { font-size: clamp(36px, 10vw, 64px); }
+  }
+
+  /* Overall credibility summary */
+  .overall-card {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .overall-card .label {
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    opacity: 0.5;
+    margin-bottom: 6px;
+  }
+
+  .overall-card .summary-text {
+    font-family: var(--serif);
+    font-size: 14px;
+    line-height: 1.5;
+    font-style: italic;
+    opacity: 0.9;
+  }
+
+  .overall-score-big {
+    font-family: var(--serif);
+    font-size: 56px;
+    font-weight: 900;
+    line-height: 1;
+    text-align: center;
+  }
+
+  .overall-score-label {
+    font-family: var(--mono);
+    font-size: 7px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    opacity: 0.5;
+    text-align: center;
+    margin-top: 2px;
+  }
+
+  /* ── SHARE BAR ─────────────────────────────────── */
+  .share-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 20px;
+    background: var(--ink);
+    color: var(--paper);
+    flex-wrap: wrap;
+  }
+  .share-bar-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+  .share-bar-sub {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: rgba(245,240,232,0.35);
+    margin-top: 2px;
+    display: block;
+  }
+  .share-bar-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .share-copy-btn, .share-x-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 16px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+  }
+  .share-copy-btn {
+    background: rgba(245,240,232,0.1);
+    color: var(--paper);
+    border: 1px solid rgba(245,240,232,0.2);
+  }
+  .share-copy-btn:hover { background: rgba(245,240,232,0.18); }
+  .share-copy-btn.copied { background: rgba(45,122,45,0.3); border-color: rgba(45,122,45,0.5); color: #7ddb7d; }
+
+  .share-x-btn {
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .share-x-btn:hover { background: rgba(245,240,232,0.85); }
+
+  /* ── MODAL ──────────────────────────────────────── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,10,15,0.75);
+    z-index: 9000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal-box {
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    width: min(520px, 94vw);
+    animation: modalIn 0.25s cubic-bezier(0.16,1,0.3,1);
+  }
+  @keyframes modalIn {
+    from { opacity:0; transform: scale(0.94) translateY(16px); }
+    to   { opacity:1; transform: scale(1) translateY(0); }
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .modal-title {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    color: var(--mid, #888);
+    padding: 4px 6px;
+    opacity: 0.5;
+    transition: opacity 0.15s;
+  }
+  .modal-close:hover { opacity: 1; }
+
+  .modal-body { padding: 20px; }
+
+  .tweet-preview-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(10,10,15,0.4);
+    margin-bottom: 8px;
+  }
+
+  .tweet-composer {
+    width: 100%;
+    min-height: 110px;
+    padding: 14px;
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.55;
+    background: white;
+    border: 1px solid rgba(10,10,15,0.15);
+    border-top: 3px solid var(--ink);
+    resize: none;
+    outline: none;
+    color: var(--ink);
+  }
+  .tweet-composer:focus { box-shadow: 3px 3px 0 var(--ink); }
+
+  .tweet-meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+  }
+  .tweet-char-count {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: rgba(10,10,15,0.4);
+  }
+  .tweet-char-count.low { color: var(--accent-gold); }
+  .tweet-char-count.over { color: var(--accent-red); }
+  .tweet-hint {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: rgba(10,10,15,0.3);
+    letter-spacing: 0.05em;
+  }
+
+  .tweet-link-preview {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: var(--paper-dark);
+    border: 1px solid var(--rule);
+    border-left: 3px solid rgba(10,10,15,0.25);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: rgba(10,10,15,0.55);
+    word-break: break-all;
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 14px 20px;
+    border-top: 1px solid var(--rule);
+    background: var(--paper-dark);
+  }
+  .modal-cancel {
+    padding: 9px 18px;
+    background: transparent;
+    border: 1px solid var(--rule);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    color: rgba(10,10,15,0.5);
+    transition: all 0.15s;
+  }
+  .modal-cancel:hover { border-color: var(--ink); color: var(--ink); }
+
+  .modal-post-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 20px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .modal-post-btn:hover { background: #1a1a2e; }
+
+  /* ── REVIEW PAGE ────────────────────────────────── */
+  #review-page { min-height: 100vh; background: var(--paper); }
+
+  .review-page-header {
+    border-bottom: 3px double var(--ink);
+    padding: 24px 48px 20px;
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .review-page-logo {
+    font-family: var(--serif);
+    font-size: 42px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .review-page-sub {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(10,10,15,0.4);
+    flex: 1;
+  }
+  .review-analyse-own {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: rgba(10,10,15,0.45);
+    text-decoration: none;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 1px;
+    transition: color 0.15s;
+  }
+  .review-analyse-own:hover { color: var(--ink); }
+
+  .review-page-body {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 40px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .review-shared-by {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(10,10,15,0.4);
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .review-section-label {
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(10,10,15,0.4);
+    margin-bottom: 10px;
+  }
+
+  .review-content-box {
+    background: white;
+    border: 1px solid rgba(10,10,15,0.12);
+    border-top: 3px solid var(--ink);
+    padding: 20px;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.75;
+    color: rgba(10,10,15,0.75);
+    max-height: 260px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .review-content-meta {
+    margin-top: 8px;
+    font-family: var(--mono);
+    font-size: 9px;
+    color: rgba(10,10,15,0.35);
+    letter-spacing: 0.1em;
+  }
+
+  .review-results-container .results-display {
+    display: flex !important;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  /* Loading spinner for review page */
+  .review-loading {
+    text-align: center;
+    padding: 60px 0;
+    font-family: var(--serif);
+    font-size: 18px;
+    font-style: italic;
+    color: rgba(10,10,15,0.4);
+    animation: pulse 2s ease-in-out infinite;
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-bg-word" aria-hidden="true">VERITY</div>
+  <div class="hero-inner">
+
+    <div class="hero-eyebrow">News Intelligence Platform</div>
+
+    <p class="hero-body-text">
+      We live in an era where <strong>the same event generates a hundred different stories.</strong>
+      Trust in media is fracturing. Left and right no longer share the same facts —
+      let alone the same reality. Before you share, before you believe,
+      <strong>know what you're actually reading.</strong>
+    </p>
+
+    <h2 class="hero-tagline">
+      See through<br>
+      the <em>noise.</em><br>
+      <span class="highlight">Analyse the truth.</span>
+    </h2>
+
+    <button class="hero-scroll-cta" onclick="document.getElementById('app').scrollIntoView({behavior:'smooth'})">
+      <span class="scroll-arrow">↓</span>
+      Start analysing
+    </button>
+
+  </div>
+</section>
+
+<div id="app">
+
+<!-- MASTHEAD -->
+<header class="masthead">
+  <div class="masthead-tagline">
+    Vol. I — Est. 2025<br>
+    Intelligence Edition
+  </div>
+  <div>
+    <div class="masthead-title">
+      VERITY
+      <span>News Intelligence Engine</span>
+    </div>
+  </div>
+  <div class="masthead-meta">
+    AI-Powered Analysis<br>
+    Political · Funding · Validity<br>
+    <span id="live-date"></span>
+  </div>
+</header>
+
+<div class="divider-rule">
+  <span>Paste any article, tweet, or news post for instant deep analysis</span>
+</div>
+
+<!-- MAIN GRID -->
+<div class="main-grid">
+
+  <!-- INPUT COLUMN -->
+  <div class="input-col">
+    <div class="section-label">Source Input</div>
+    <div>
+      <h2>Analyse a news source, article, or claim</h2>
+      <p style="margin-top:10px">Submit any news article, tweet, or social media post. Verity examines political leaning, funding transparency, and factual validity using AI analysis.</p>
+    </div>
+
+    <div>
+      <div class="section-label" style="margin-bottom:8px">Content Type</div>
+      <div class="source-type-row">
+        <button class="source-btn active" data-type="article">Article</button>
+        <button class="source-btn" data-type="tweet">Tweet / Post</button>
+        <button class="source-btn" data-type="claim">Claim</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label" style="margin-bottom:8px">Publication / Source</div>
+      <input class="pub-input" type="text" id="publication" placeholder="e.g. The Guardian, Fox News, @username…">
+    </div>
+
+    <div>
+      <div class="section-label" style="margin-bottom:8px">Content to Analyse</div>
+      <div class="textarea-wrap">
+        <textarea id="content-input" placeholder="Paste the full article, tweet, or news post here…&#10;&#10;The more text you provide, the more accurate the analysis will be."></textarea>
+        <span class="char-count" id="char-count">0 chars</span>
+      </div>
+    </div>
+
+    <button class="analyze-btn" id="analyze-btn" onclick="analyzeContent()">
+      Analyse This Source
+    </button>
+
+    <div class="error-msg" id="error-msg"></div>
+
+    <div class="disclaimer">
+      ⚠ Analysis is AI-generated and should not be taken as definitive fact. Political alignment and funding data may be incomplete. Always consult primary sources.
+    </div>
+  </div>
+
+  <div class="col-divider"></div>
+
+  <!-- RESULTS COLUMN -->
+  <div class="results-col">
+
+    <!-- Empty state -->
+    <div class="empty-state" id="empty-state">
+      <div class="big-eye">🔍</div>
+      <h3>No source submitted yet</h3>
+      <p>Paste an article or post on the left to receive a full intelligence report</p>
+    </div>
+
+    <!-- Loading state -->
+    <div class="loading-overlay" id="loading-state">
+      <div class="loading-text">Examining the source…</div>
+      <div class="loading-steps">
+        <div class="loading-step" id="step-1"><span class="step-dot"></span>Reading content</div>
+        <div class="loading-step" id="step-2"><span class="step-dot"></span>Checking publication history</div>
+        <div class="loading-step" id="step-3"><span class="step-dot"></span>Mapping political alignment</div>
+        <div class="loading-step" id="step-4"><span class="step-dot"></span>Tracing funding sources</div>
+        <div class="loading-step" id="step-5"><span class="step-dot"></span>Verifying claims</div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="results-display" id="results-display">
+
+      <div class="claim-header" id="r-header">
+        <div class="kicker">Intelligence Report</div>
+        <h3 id="r-headline"></h3>
+        <div class="pub-tag" id="r-pub"></div>
+      </div>
+
+      <!-- Overall credibility -->
+      <div class="overall-card">
+        <div>
+          <div class="label">Overall Assessment</div>
+          <div class="summary-text" id="r-summary"></div>
+        </div>
+        <div>
+          <div class="overall-score-big" id="r-score"></div>
+          <div class="overall-score-label">credibility</div>
+        </div>
+      </div>
+
+      <!-- Validity -->
+      <div class="alignment-card">
+        <div class="card-header">
+          <h4>Factual Validity</h4>
+          <span style="font-family:var(--mono);font-size:9px;color:rgba(10,10,15,0.4)" id="r-validity-tag"></span>
+        </div>
+        <div class="card-body">
+          <div class="verdict-banner" id="r-verdict-banner">
+            <div class="verdict-label-col">Verdict</div>
+            <div class="verdict-content">
+              <div class="verdict-score-row">
+                <div class="verdict-score" id="r-validity-score"></div>
+                <div class="verdict-label" id="r-validity-label"></div>
+              </div>
+              <div class="verdict-desc" id="r-validity-desc"></div>
+            </div>
+          </div>
+
+          <div class="claims-list" id="r-claims" style="margin-top:12px"></div>
+        </div>
+      </div>
+
+      <!-- Political alignment -->
+      <div class="alignment-card">
+        <div class="card-header">
+          <h4>Political Alignment</h4>
+          <span style="font-family:var(--mono);font-size:9px;color:rgba(10,10,15,0.4)" id="r-align-tag"></span>
+        </div>
+        <div class="card-body">
+          <div class="spectrum-labels">
+            <span>Far Left</span><span>Left</span><span>Centre</span><span>Right</span><span>Far Right</span>
+          </div>
+          <div class="spectrum-bar">
+            <div class="spectrum-needle" id="r-needle"></div>
+          </div>
+          <div class="alignment-detail" id="r-align-detail"></div>
+          <div style="margin-top:12px;font-size:12px;line-height:1.6;color:rgba(10,10,15,0.65)" id="r-align-desc"></div>
+        </div>
+      </div>
+
+      <!-- Funding -->
+      <div class="alignment-card">
+        <div class="card-header">
+          <h4>Funding & Ownership</h4>
+        </div>
+        <div class="card-body">
+          <div class="funding-grid" id="r-funding-grid"></div>
+          <div id="r-funding-bars"></div>
+          <div style="margin-top:12px;font-size:12px;line-height:1.6;color:rgba(10,10,15,0.65)" id="r-funding-desc"></div>
+        </div>
+      </div>
+
+      <!-- Footnotes -->
+      <div class="footnotes">
+        <h5>Methodology & Caveats</h5>
+        <div id="r-footnotes"></div>
+      </div>
+
+      <!-- SHARE BAR -->
+      <div class="share-bar" id="share-bar">
+        <div class="share-bar-left">
+          <span class="share-bar-label">Share this analysis</span>
+          <span class="share-bar-sub" id="share-review-id">Run an analysis to generate a share link</span>
+        </div>
+        <div class="share-bar-actions">
+          <button class="share-copy-btn" id="share-copy-btn" onclick="copyShareLink()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy Link
+          </button>
+          <button class="share-x-btn" onclick="openShareModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.253 5.622 5.91-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            Share on X
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// Live date
+document.getElementById('live-date').textContent = new Date().toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'});
+
+// Scroll-grow: hero tagline swells and fades as you scroll down
+(function() {
+  var tagline = document.querySelector('.hero-tagline');
+  var heroInner = document.querySelector('.hero-inner');
+  var hero = document.getElementById('hero');
+  function handleScroll() {
+    var scrollY = window.scrollY;
+    var heroH = hero.offsetHeight;
+    var progress = Math.min(1, scrollY / (heroH * 0.65));
+    var eased = 1 - Math.pow(1 - progress, 3);
+    tagline.style.transform = 'scale(' + (1 + eased * 0.13) + ')';
+    tagline.style.opacity = Math.max(0, 1 - eased * 0.88);
+    heroInner.style.transform = 'translateY(' + (scrollY * 0.22) + 'px)';
+  }
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  handleScroll();
+})();
+
+// Source type buttons
+let activeType = 'article';
+document.querySelectorAll('.source-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.source-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeType = btn.dataset.type;
+  });
+});
+
+// Char count
+const textarea = document.getElementById('content-input');
+textarea.addEventListener('input', () => {
+  document.getElementById('char-count').textContent = textarea.value.length + ' chars';
+});
+
+// Loading steps animation
+function animateSteps() {
+  const steps = ['step-1','step-2','step-3','step-4','step-5'];
+  let i = 0;
+  const interval = setInterval(() => {
+    if (i > 0) {
+      document.getElementById(steps[i-1]).classList.remove('active');
+      document.getElementById(steps[i-1]).classList.add('done');
+    }
+    if (i < steps.length) {
+      document.getElementById(steps[i]).classList.add('active');
+      i++;
+    } else {
+      clearInterval(interval);
+    }
+  }, 700);
+}
+
+function resetSteps() {
+  for (let i = 1; i <= 5; i++) {
+    const el = document.getElementById('step-' + i);
+    el.classList.remove('active','done');
+  }
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-msg');
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+
+function hideError() {
+  document.getElementById('error-msg').classList.remove('visible');
+}
+
+async function analyzeContent() {
+  const content = textarea.value.trim();
+  const publication = document.getElementById('publication').value.trim();
+
+  if (!content || content.length < 20) {
+    showError('Please paste at least 20 characters of content to analyse.');
+    return;
+  }
+
+  hideError();
+
+  // Show loading
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('results-display').classList.remove('visible');
+  document.getElementById('loading-state').classList.add('visible');
+  document.getElementById('analyze-btn').classList.add('loading');
+  document.getElementById('analyze-btn').innerHTML = '<span class="spinner"></span>Analysing…';
+  resetSteps();
+  animateSteps();
+
+  const prompt = `You are a rigorous news intelligence analyst. Analyse the following ${activeType} content${publication ? ' from "' + publication + '"' : ''} and return a JSON object with EXACTLY this structure (no markdown, no extra text, pure JSON):
+
+{
+  "headline": "A concise 8-12 word summary of the main claim or topic",
+  "publication_display": "Publication name or 'Unknown Source' if not provided",
+  "overall_score": "A number 0-100 representing overall credibility",
+  "overall_summary": "2-3 sentence editorial-style assessment of this source and content",
+  "validity": {
+    "score": 0-100,
+    "label": "one of: Highly Credible / Credible / Mixed / Questionable / Unreliable / Misleading",
+    "description": "2-3 sentences explaining the factual assessment",
+    "claims": [
+      { "text": "specific claim extracted from content (max 12 words)", "status": "verified|unverified|disputed|misleading" },
+      { "text": "another claim", "status": "verified|unverified|disputed|misleading" },
+      { "text": "another claim", "status": "verified|unverified|disputed|misleading" }
+    ]
+  },
+  "political_alignment": {
+    "position": -100 to 100 (negative=left, 0=centre, positive=right),
+    "label": "e.g. Centre-Left, Hard Right, Centrist, etc.",
+    "framing": "How language/framing reveals political leaning (1 sentence)",
+    "topics_skewed": "Which topics or angles are emphasised or omitted (1 sentence)",
+    "description": "2 sentences on political context and potential bias"
+  },
+  "funding": {
+    "owner": "Known owner or 'Unknown'",
+    "type": "e.g. Corporate, State-funded, Non-profit, Independent, Unknown",
+    "political_donors": "Known donor affiliations or 'Not publicly known'",
+    "transparency_score": 0-100,
+    "revenue_model": "e.g. Advertising, Subscription, Government funding, Donor-funded, etc.",
+    "description": "2 sentences on funding context and potential conflicts of interest"
+  },
+  "footnotes": [
+    "A caveat or methodology note",
+    "Another caveat",
+    "Another caveat"
+  ]
+}
+
+Content to analyse:
+---
+${content}
+---`;
+
+  try {
+    const response = await fetch("/api/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+
+    const data = await response.json();
+    if (data.error) throw new Error(data.error.message);
+
+    const rawText = data.content.map(c => c.text || '').join('');
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('Could not parse analysis response.');
+    const result = JSON.parse(jsonMatch[0]);
+
+    renderResults(result, publication);
+
+  } catch (err) {
+    document.getElementById('loading-state').classList.remove('visible');
+    document.getElementById('empty-state').style.display = '';
+    showError('Analysis failed: ' + err.message + '. Please try again.');
+  } finally {
+    document.getElementById('analyze-btn').classList.remove('loading');
+    document.getElementById('analyze-btn').innerHTML = 'Analyse This Source';
+  }
+}
+
+function renderResults(r, rawPub) {
+  document.getElementById('loading-state').classList.remove('visible');
+
+  // Header
+  document.getElementById('r-headline').textContent = r.headline || 'Content Analysis';
+  document.getElementById('r-pub').textContent =
+    '◆ ' + (r.publication_display || rawPub || 'Unknown Source') + ' · ' + activeType.charAt(0).toUpperCase() + activeType.slice(1);
+
+  // Overall
+  const score = parseInt(r.overall_score) || 50;
+  document.getElementById('r-score').textContent = score + '%';
+  document.getElementById('r-summary').textContent = r.overall_summary || '';
+
+  // Validity
+  const v = r.validity || {};
+  const vscore = parseInt(v.score) || 50;
+  const vclass = vscore >= 70 ? 'high' : vscore >= 40 ? 'medium' : 'low';
+  document.getElementById('r-validity-score').textContent = vscore + '%';
+  document.getElementById('r-validity-score').className = 'verdict-score ' + vclass;
+  document.getElementById('r-validity-label').textContent = v.label || '';
+  document.getElementById('r-validity-label').className = 'verdict-label ' + vclass;
+  document.getElementById('r-validity-desc').textContent = v.description || '';
+  document.getElementById('r-validity-tag').textContent = v.label || '';
+
+  // Claims
+  const claimsList = document.getElementById('r-claims');
+  claimsList.innerHTML = '';
+  (v.claims || []).forEach((c, i) => {
+    const row = document.createElement('div');
+    row.className = 'claim-row';
+    row.innerHTML = `
+      <span class="claim-num">${String(i+1).padStart(2,'0')}</span>
+      <span class="claim-text">${c.text}</span>
+      <span class="claim-badge ${c.status || 'unverified'}">${(c.status||'unverified').replace(/-/g,' ')}</span>
+    `;
+    claimsList.appendChild(row);
+  });
+
+  // Political alignment
+  const pa = r.political_alignment || {};
+  const pos = parseFloat(pa.position) || 0;
+  const needlePct = ((pos + 100) / 200) * 100;
+  document.getElementById('r-needle').style.left = needlePct + '%';
+  document.getElementById('r-align-tag').textContent = pa.label || '';
+
+  const alignDetail = document.getElementById('r-align-detail');
+  alignDetail.innerHTML = '';
+  const leanClass = pos < -20 ? 'left-leaning' : pos > 20 ? 'right-leaning' : 'neutral';
+  [
+    { label: 'Alignment', value: pa.label || 'Centre' },
+    { label: 'Position', value: pos > 0 ? '+' + pos : pos.toString() }
+  ].forEach(item => {
+    const d = document.createElement('div');
+    d.className = 'align-stat ' + leanClass;
+    d.innerHTML = `<div class="align-stat-label">${item.label}</div><div class="align-stat-value">${item.value}</div>`;
+    alignDetail.appendChild(d);
+  });
+
+  if (pa.framing) {
+    const d2 = document.createElement('div');
+    d2.className = 'align-stat ' + leanClass;
+    d2.innerHTML = `<div class="align-stat-label">Framing</div><div class="align-stat-value" style="font-size:12px;font-family:var(--sans)">${pa.framing}</div>`;
+    alignDetail.appendChild(d2);
+  }
+  if (pa.topics_skewed) {
+    const d3 = document.createElement('div');
+    d3.className = 'align-stat ' + leanClass;
+    d3.innerHTML = `<div class="align-stat-label">Emphasis/Omission</div><div class="align-stat-value" style="font-size:12px;font-family:var(--sans)">${pa.topics_skewed}</div>`;
+    alignDetail.appendChild(d3);
+  }
+
+  document.getElementById('r-align-desc').textContent = pa.description || '';
+
+  // Funding
+  const f = r.funding || {};
+  const fundingGrid = document.getElementById('r-funding-grid');
+  fundingGrid.innerHTML = '';
+  [
+    { label: 'Owner', value: f.owner || 'Unknown' },
+    { label: 'Type', value: f.type || 'Unknown' },
+    { label: 'Revenue Model', value: f.revenue_model || 'Unknown' },
+    { label: 'Donor Affiliations', value: f.political_donors || 'Not publicly known' }
+  ].forEach(item => {
+    const d = document.createElement('div');
+    d.className = 'funding-item';
+    d.innerHTML = `<div class="funding-item-label">${item.label}</div><div class="funding-item-value">${item.value}</div>`;
+    fundingGrid.appendChild(d);
+  });
+
+  const fundingBars = document.getElementById('r-funding-bars');
+  const tscore = parseInt(f.transparency_score) || 50;
+  fundingBars.innerHTML = `
+    <div class="funding-bar-wrap" style="margin-top:8px">
+      <div class="funding-bar-label"><span>Funding Transparency</span><span>${tscore}%</span></div>
+      <div class="funding-bar"><div class="funding-bar-fill" id="transparency-bar"></div></div>
+    </div>
+  `;
+  setTimeout(() => {
+    const bar = document.getElementById('transparency-bar');
+    if (bar) bar.style.width = tscore + '%';
+  }, 100);
+
+  document.getElementById('r-funding-desc').textContent = f.description || '';
+
+  // Footnotes
+  const fnContainer = document.getElementById('r-footnotes');
+  fnContainer.innerHTML = '';
+  (r.footnotes || ['Analysis generated by AI and may contain inaccuracies.']).forEach(fn => {
+    const d = document.createElement('div');
+    d.className = 'footnote-item';
+    d.textContent = fn;
+    fnContainer.appendChild(d);
+  });
+
+  // Show results
+  document.getElementById('results-display').classList.add('visible');
+
+  // Animate needle
+  setTimeout(() => {
+    document.getElementById('r-needle').style.left = needlePct + '%';
+  }, 150);
+
+  // Save review & show share bar
+  const inputContent = document.getElementById('content-input').value;
+  currentReviewData = r;
+  saveReview(r, inputContent, rawPub, activeType).then(id => {
+    currentReviewId = id;
+    document.getElementById('share-review-id').textContent = 'Review ID: ' + id;
+  });
+}
+
+
+// ── STORAGE & SHARING ────────────────────────────────────────────────────────
+
+let currentReviewId = null;
+let currentReviewData = null;
+
+function genId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+function getShareUrl(id) {
+  return window.location.origin + window.location.pathname + '#review/' + id;
+}
+
+async function saveReview(analysisResult, inputContent, publication, contentType) {
+  const id = genId();
+  const payload = JSON.stringify({
+    id, ts: Date.now(),
+    content: inputContent,
+    publication: publication || '',
+    contentType: contentType || 'article',
+    result: analysisResult
+  });
+  try {
+    await window.storage.set('review:' + id, payload, true);
+    return id;
+  } catch(e) {
+    try { sessionStorage.setItem('verity_review_' + id, payload); } catch(_) {}
+    return id;
+  }
+}
+
+async function loadReview(id) {
+  try {
+    const res = await window.storage.get('review:' + id, true);
+    if (res && res.value) return JSON.parse(res.value);
+  } catch(e) {}
+  try {
+    const s = sessionStorage.getItem('verity_review_' + id);
+    if (s) return JSON.parse(s);
+  } catch(_) {}
+  return null;
+}
+
+function openShareModal() {
+  if (!currentReviewId || !currentReviewData) return;
+  const url = getShareUrl(currentReviewId);
+  const r = currentReviewData;
+  const align = (r.political_alignment || {}).label || '';
+  const score = r.overall_score || '';
+  const headline = r.headline || 'News analysis';
+  const defaultTweet = 'I just analysed "' + headline + '" on VERITY.\n\n' + (align ? align + ' · ' : '') + 'Credibility: ' + score + '%\n\nSee the full breakdown \uD83D\uDC47';
+  const ta = document.getElementById('tweet-text');
+  ta.value = defaultTweet;
+  updateTweetCount();
+  document.getElementById('tweet-link-preview').textContent = url;
+  document.getElementById('share-modal').classList.add('open');
+  ta.focus();
+}
+
+function closeShareModal() {
+  document.getElementById('share-modal').classList.remove('open');
+}
+
+function updateTweetCount() {
+  const ta = document.getElementById('tweet-text');
+  const remaining = 260 - ta.value.length;
+  const el = document.getElementById('tweet-char-count');
+  el.textContent = remaining;
+  el.className = 'tweet-char-count' + (remaining < 20 ? ' low' : '') + (remaining < 0 ? ' over' : '');
+}
+
+function postToX() {
+  if (!currentReviewId) return;
+  const text = document.getElementById('tweet-text').value.trim();
+  const url = getShareUrl(currentReviewId);
+  const full = text + '\n' + url;
+  window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(full), '_blank', 'width=600,height=400');
+  closeShareModal();
+}
+
+async function copyShareLink() {
+  if (!currentReviewId) return;
+  const url = getShareUrl(currentReviewId);
+  try { await navigator.clipboard.writeText(url); } catch(e) {
+    const ta2 = document.createElement('textarea');
+    ta2.value = url; document.body.appendChild(ta2); ta2.select(); document.execCommand('copy'); document.body.removeChild(ta2);
+  }
+  const btn = document.getElementById('share-copy-btn');
+  btn.classList.add('copied');
+  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+  setTimeout(() => {
+    btn.classList.remove('copied');
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy Link';
+  }, 2500);
+}
+
+function buildResultsHTML(r) {
+  const score = parseInt(r.overall_score) || 50;
+  const v = r.validity || {};
+  const vscore = parseInt(v.score) || 50;
+  const vclass = vscore >= 70 ? 'high' : vscore >= 40 ? 'medium' : 'low';
+  const pa = r.political_alignment || {};
+  const pos = parseFloat(pa.position) || 0;
+  const needlePct = ((pos + 100) / 200) * 100;
+  const leanClass = pos < -20 ? 'left-leaning' : pos > 20 ? 'right-leaning' : 'neutral';
+  const f = r.funding || {};
+  const tscore = parseInt(f.transparency_score) || 50;
+
+  const claimsHTML = (v.claims||[]).map((c,i) =>
+    '<div class="claim-row"><span class="claim-num">' + String(i+1).padStart(2,'0') + '</span><span class="claim-text">' + c.text + '</span><span class="claim-badge ' + (c.status||'unverified') + '">' + (c.status||'unverified').replace(/-/g,' ') + '</span></div>'
+  ).join('');
+
+  const alignStatsHTML =
+    '<div class="align-stat ' + leanClass + '"><div class="align-stat-label">Alignment</div><div class="align-stat-value">' + (pa.label||'Centre') + '</div></div>' +
+    '<div class="align-stat ' + leanClass + '"><div class="align-stat-label">Position</div><div class="align-stat-value">' + (pos>0?'+'+pos:pos) + '</div></div>' +
+    (pa.framing ? '<div class="align-stat ' + leanClass + '"><div class="align-stat-label">Framing</div><div class="align-stat-value" style="font-size:12px;font-family:var(--sans)">' + pa.framing + '</div></div>' : '');
+
+  const fundingItemsHTML = [
+    {label:'Owner',value:f.owner||'Unknown'},
+    {label:'Type',value:f.type||'Unknown'},
+    {label:'Revenue Model',value:f.revenue_model||'Unknown'},
+    {label:'Donor Affiliations',value:f.political_donors||'Not publicly known'}
+  ].map(item => '<div class="funding-item"><div class="funding-item-label">' + item.label + '</div><div class="funding-item-value">' + item.value + '</div></div>').join('');
+
+  const footnotesHTML = (r.footnotes||['AI-generated analysis.']).map(fn => '<div class="footnote-item">' + fn + '</div>').join('');
+
+  return '<div class="results-display" style="display:flex;flex-direction:column;gap:28px">' +
+    '<div class="claim-header"><div class="kicker">Intelligence Report</div><h3>' + (r.headline||'Content Analysis') + '</h3><div class="pub-tag">\u25C6 ' + (r.publication_display||'Unknown Source') + '</div></div>' +
+    '<div class="overall-card"><div><div class="label">Overall Assessment</div><div class="summary-text">' + (r.overall_summary||'') + '</div></div><div><div class="overall-score-big">' + score + '%</div><div class="overall-score-label">credibility</div></div></div>' +
+    '<div class="alignment-card"><div class="card-header"><h4>Factual Validity</h4><span style="font-family:var(--mono);font-size:9px;color:rgba(10,10,15,0.4)">' + (v.label||'') + '</span></div><div class="card-body"><div class="verdict-banner"><div class="verdict-label-col">Verdict</div><div class="verdict-content"><div class="verdict-score-row"><div class="verdict-score ' + vclass + '">' + vscore + '%</div><div class="verdict-label ' + vclass + '">' + (v.label||'') + '</div></div><div class="verdict-desc">' + (v.description||'') + '</div></div></div><div class="claims-list" style="margin-top:12px">' + claimsHTML + '</div></div></div>' +
+    '<div class="alignment-card"><div class="card-header"><h4>Political Alignment</h4><span style="font-family:var(--mono);font-size:9px;color:rgba(10,10,15,0.4)">' + (pa.label||'') + '</span></div><div class="card-body"><div class="spectrum-labels"><span>Far Left</span><span>Left</span><span>Centre</span><span>Right</span><span>Far Right</span></div><div class="spectrum-bar"><div class="spectrum-needle" style="left:' + needlePct + '%"></div></div><div class="alignment-detail">' + alignStatsHTML + '</div><div style="margin-top:12px;font-size:12px;line-height:1.6;color:rgba(10,10,15,0.65)">' + (pa.description||'') + '</div></div></div>' +
+    '<div class="alignment-card"><div class="card-header"><h4>Funding & Ownership</h4></div><div class="card-body"><div class="funding-grid">' + fundingItemsHTML + '</div><div class="funding-bar-wrap" style="margin-top:8px"><div class="funding-bar-label"><span>Funding Transparency</span><span>' + tscore + '%</span></div><div class="funding-bar"><div class="funding-bar-fill" style="width:0%"></div></div></div><div style="margin-top:12px;font-size:12px;line-height:1.6;color:rgba(10,10,15,0.65)">' + (f.description||'') + '</div></div></div>' +
+    '<div class="footnotes"><h5>Methodology & Caveats</h5>' + footnotesHTML + '</div></div>';
+}
+
+async function handleHashRoute() {
+  const hash = window.location.hash;
+  if (hash.startsWith('#review/')) {
+    const id = hash.slice(8);
+    if (!id) return;
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('hero').style.display = 'none';
+    const rp = document.getElementById('review-page');
+    rp.style.display = 'block';
+    document.getElementById('review-results-container').innerHTML = '<div class="review-loading">Loading analysis\u2026</div>';
+    document.getElementById('review-shared-by').textContent = 'Loading\u2026';
+    const data = await loadReview(id);
+    if (data) {
+      showReviewPage(data);
+    } else {
+      document.getElementById('review-results-container').innerHTML = '<div style="text-align:center;padding:60px;font-family:var(--mono);font-size:11px;color:rgba(10,10,15,0.4)">This review could not be found or may have expired.</div>';
+      document.getElementById('review-shared-by').textContent = 'Review not found';
+    }
+  }
+}
+
+function showReviewPage(data) {
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('hero').style.display = 'none';
+  document.getElementById('review-page').style.display = 'block';
+  document.title = 'VERITY \u2014 Shared Analysis';
+  const ts = data.ts ? new Date(data.ts).toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'}) : '';
+  document.getElementById('review-shared-by').textContent = 'Analysis' + (ts ? ' from ' + ts : '') + (data.publication ? '  \u00B7  Source: ' + data.publication : '');
+  document.getElementById('review-content-box').textContent = data.content || '';
+  document.getElementById('review-content-meta').textContent = [data.contentType, data.publication].filter(Boolean).join(' \u00B7 ');
+  const container = document.getElementById('review-results-container');
+  container.innerHTML = buildResultsHTML(data.result);
+  setTimeout(() => {
+    const pa = (data.result.political_alignment || {});
+    const pos2 = parseFloat(pa.position) || 0;
+    const np = ((pos2 + 100) / 200) * 100;
+    const needle = container.querySelector('.spectrum-needle');
+    if (needle) needle.style.left = np + '%';
+    const bar = container.querySelector('.funding-bar-fill');
+    if (bar) bar.style.width = (parseInt((data.result.funding||{}).transparency_score)||50) + '%';
+  }, 120);
+}
+
+function exitReviewPage() {
+  window.location.hash = '';
+  document.getElementById('review-page').style.display = 'none';
+  document.getElementById('app').style.display = '';
+  document.getElementById('hero').style.display = '';
+  document.title = 'VERITY \u2014 News Intelligence';
+}
+
+window.addEventListener('hashchange', handleHashRoute);
+handleHashRoute();
+</script>
+
+<!-- SHARE MODAL -->
+<div class="modal-overlay" id="share-modal" onclick="if(event.target===this)closeShareModal()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">Share on X / Twitter</div>
+      <button class="modal-close" onclick="closeShareModal()">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <div class="tweet-preview-label">Edit your post</div>
+      <textarea class="tweet-composer" id="tweet-text" maxlength="260" oninput="updateTweetCount()"></textarea>
+      <div class="tweet-meta-row">
+        <span class="tweet-char-count" id="tweet-char-count">260</span>
+        <span class="tweet-hint">Link auto-appended</span>
+      </div>
+      <div class="tweet-link-preview" id="tweet-link-preview"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-cancel" onclick="closeShareModal()">Cancel</button>
+      <button class="modal-post-btn" onclick="postToX()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.253 5.622 5.91-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        Post to X
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- SHARED REVIEW PAGE -->
+<div id="review-page" style="display:none">
+  <div class="review-page-header">
+    <div class="review-page-logo">VERITY</div>
+    <div class="review-page-sub">Shared Analysis Report</div>
+    <a href="#" class="review-analyse-own" onclick="exitReviewPage();return false;">&#x2190; Analyse your own article</a>
+  </div>
+  <div class="review-page-body">
+    <div class="review-shared-by" id="review-shared-by"></div>
+    <div class="review-original-content">
+      <div class="review-section-label">Original Content Analysed</div>
+      <div class="review-content-box" id="review-content-box"></div>
+      <div class="review-content-meta" id="review-content-meta"></div>
+    </div>
+    <div id="review-results-container"></div>
+  </div>
+</div>
+
+</body>
+</html>
+
